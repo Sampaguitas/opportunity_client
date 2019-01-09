@@ -3,9 +3,9 @@ import Select from './Select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
+import { getIndustries, getTerritories, createOpportunity } from './apiAdapter'
 import './App.css';
 library.add(fas);
-
 
 class App extends Component {
   constructor(props) {
@@ -24,15 +24,15 @@ class App extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.getTerritories = this.getTerritories.bind(this);
-    this.getIndustries = this.getIndustries.bind(this);
+    // this.getTerritories = this.getTerritories.bind(this);
+    // this.getIndustries = this.getIndustries.bind(this);
   }
   componentDidMount(){
     const that = this;
-    this.getIndustries().then(function (response) {
+    getIndustries().then(function (response) {
       that.setState({ industries: response });
     });
-    this.getTerritories().then(function (response) {
+    getTerritories().then(function (response) {
       that.setState({ territories: response });
     });
   }
@@ -46,48 +46,46 @@ class App extends Component {
         [name]: value
       }
     });
-    console.log(this.state);
   }
   handleSubmit(event) {
     event.preventDefault();
-    this.setState({ submitted: true });
+    this.setState({ submitted: true, loading: true });
     const { opportunity } = this.state;
     const that = this
     if (opportunity.territory && opportunity.industry) {
-      this.createOpportunity(opportunity).then(function (response) {
+      createOpportunity(opportunity).then(function (response) {
         that.setState({ salesforce: response });
-        console.log(response);
+        that.setState({ loading: false });
       });
-    } else {
-      console.log('empty');
-    }
+      that.setState({ loading: false });
+    } 
       
   }
 
-  getIndustries() {
-    const requestOptions = {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    };
-    return fetch(`https://opportunity-server.herokuapp.com/industry/findAll`, requestOptions).then(this.handleResponse);
-  }
+  // getIndustries() {
+  //   const requestOptions = {
+  //     method: 'GET',
+  //     headers: { 'Content-Type': 'application/json' }
+  //   };
+  //   return fetch(`https://opportunity-server.herokuapp.com/industry/findAll`, requestOptions).then(this.handleResponse);
+  // }
 
-  getTerritories() {
-    const requestOptions = {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    };
-    return fetch(`https://opportunity-server.herokuapp.com/territory/findAll`, requestOptions).then(this.handleResponse);
-  }
+  // getTerritories() {
+  //   const requestOptions = {
+  //     method: 'GET',
+  //     headers: { 'Content-Type': 'application/json' }
+  //   };
+  //   return fetch(`https://opportunity-server.herokuapp.com/territory/findAll`, requestOptions).then(this.handleResponse);
+  // }
 
-  createOpportunity(opportunity) {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(opportunity)
-    };
-    return fetch(`https://opportunity-server.herokuapp.com/opportunity/create`, requestOptions).then(this.handleResponse);
-  }
+  // createOpportunity(opportunity) {
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(opportunity)
+  //   };
+  //   return fetch(`https://opportunity-server.herokuapp.com/opportunity/create`, requestOptions).then(this.handleResponse);
+  // }
 
   handleResponse(response) {
     return response.text().then(text => {
