@@ -1,6 +1,7 @@
 let API_URL
+const REACT_APP_STAGE = ''
 
-process.env.REACT_APP_STAGE === 'dev'
+REACT_APP_STAGE === 'dev'
     ? API_URL = 'http://localhost:5000'
     : API_URL = 'https://opportunity-server.herokuapp.com'
 
