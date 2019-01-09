@@ -3,9 +3,16 @@ import Select from './Select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
-import { getIndustries, getTerritories, createOpportunity } from './apiAdapter'
+// import { getIndustries, getTerritories, createOpportunity } from './apiAdapter'
 import './App.css';
 library.add(fas);
+
+let API_URL
+const REACT_APP_STAGE = 'prod'
+
+REACT_APP_STAGE === 'dev'
+  ? API_URL = 'http://localhost:5000'
+  : API_URL = 'https://opportunity-server.herokuapp.com'
 
 class App extends Component {
   constructor(props) {
@@ -24,15 +31,17 @@ class App extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    // this.getTerritories = this.getTerritories.bind(this);
-    // this.getIndustries = this.getIndustries.bind(this);
+    this.getTerritories = this.getTerritories.bind(this);
+    this.getIndustries = this.getIndustries.bind(this);
+    this.createOpportunity = this.createOpportunity.bind(this);
+    this.handleResponse = this.handleResponse.bind(this);
   }
   componentDidMount(){
     const that = this;
-    getIndustries().then(function (response) {
+    this.getIndustries().then(function (response) {
       that.setState({ industries: response });
     });
-    getTerritories().then(function (response) {
+    this.getTerritories().then(function (response) {
       that.setState({ territories: response });
     });
   }
@@ -53,14 +62,56 @@ class App extends Component {
     const { opportunity } = this.state;
     const that = this
     if (opportunity.territory && opportunity.industry) {
-      createOpportunity(opportunity).then(function (response) {
+      this.createOpportunity(opportunity).then(function (response) {
         that.setState({ salesforce: response });
         that.setState({ loading: false });
       });
-      that.setState({ loading: false });
+      //that.setState({ loading: true });
     } 
       
   }
+
+getIndustries() {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  };
+  return fetch(`${API_URL}/industry/findAll`, requestOptions).then(this.handleResponse);
+}
+
+getTerritories() {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  };
+  return fetch(`${API_URL}/territory/findAll`, requestOptions).then(this.handleResponse);
+}
+
+createOpportunity(opportunity) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(opportunity)
+  };
+  return fetch(`${API_URL}/opportunity/create`, requestOptions).then(this.handleResponse);
+}
+
+handleResponse(response) {
+  return response.text().then(text => {
+    const data = text && JSON.parse(text);
+    if (!response.ok) {
+      if (response.status === 401) {
+        // auto logout if 401 response returned from api
+      }
+      const error = (data && data.message) || response.statusText;
+      error && this.setState({message: error});
+      console.log(this.state.message);
+      return Promise.reject(error);
+    }
+    return data;
+  });
+}
+
 
   // getIndustries() {
   //   const requestOptions = {
@@ -87,19 +138,6 @@ class App extends Component {
   //   return fetch(`https://opportunity-server.herokuapp.com/opportunity/create`, requestOptions).then(this.handleResponse);
   // }
 
-  handleResponse(response) {
-    return response.text().then(text => {
-      const data = text && JSON.parse(text);
-      if (!response.ok) {
-        if (response.status === 401) {
-          // auto logout if 401 response returned from api
-        }
-        const error = (data && data.message) || response.statusText;
-        return Promise.reject(error);
-      }
-      return data;
-    });
-  }
 
   render() {
     const { salesforce, industries, loading, opportunity, submitted, territories } = this.state
