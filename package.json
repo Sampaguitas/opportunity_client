@@ -2,6 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "homepage": "http://Sampaguitas.github.io/opportunity_client",
   "engines": {
     "npm": "6.1.0",
     "node": "8.11.3"
